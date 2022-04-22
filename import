@@ -1,0 +1,23 @@
+#!/bin/sh
+# import streamripper CVS to git
+#
+# https://sourceforge.net/p/forge/documentation/CVS/
+# http://streamripper.sourceforge.net/cvs.php
+# http://streamripper.cvs.sourceforge.net/streamripper/
+
+set -eu
+
+rsync -aiv a.cvs.sourceforge.net::cvsroot/streamripper import.rsync
+
+# remove lock files, else cvsimport hangs forever
+fd '#cvs\.' import.rsync -X rm -rf {}
+
+mkdir -p import.git
+for module in \
+	mpglib \
+	sripper \
+	sripper_1x \
+	streamripper; do
+
+	git cvsimport -v -a -k -C "import.git/$module" -d "$(pwd)/import.rsync/streamripper" $module
+done
